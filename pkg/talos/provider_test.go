@@ -26,14 +26,15 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 type dynamicConfig struct {
-	Provider               string
-	ResourceName           string
-	IsoURL                 string
-	CPUMode                string
-	WithApplyConfig        bool
-	WithBootstrap          bool
-	WithRetrieveKubeConfig bool
-	WithClusterHealth      bool
+	Provider                 string
+	ResourceName             string
+	IsoURL                   string
+	CPUMode                  string
+	WithApplyConfig          bool
+	WithBootstrap            bool
+	WithRetrieveKubeConfig   bool
+	WithClusterHealth        bool
+	WithClusterHealthSkipK8s bool
 }
 
 func (c *dynamicConfig) render() string {
@@ -198,6 +199,22 @@ data "talos_cluster_health" "this" {
   client_configuration = talos_machine_secrets.this.client_configuration
   endpoints            = libvirt_domain.cp.network_interface[0].addresses
   control_plane_nodes  = libvirt_domain.cp.network_interface[0].addresses
+}
+{{ end }}
+{{ if .WithClusterHealthSkipK8s }}
+data "talos_cluster_health" "this" {
+  depends_on = [
+    talos_cluster_kubeconfig.this
+  ]
+
+  timeouts = {
+    read = "25m"
+  }
+
+  client_configuration   = talos_machine_secrets.this.client_configuration
+  endpoints              = libvirt_domain.cp.network_interface[0].addresses
+  control_plane_nodes    = libvirt_domain.cp.network_interface[0].addresses
+  skip_kubernetes_checks = true
 }
 {{ end }}
 {{ end }}
