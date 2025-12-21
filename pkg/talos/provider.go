@@ -85,6 +85,7 @@ func (p *talosProvider) DataSources(_ context.Context) []func() datasource.DataS
 		NewTalosClientConfigurationDataSource,
 		NewTalosClusterHealthDataSource,
 		NewTalosClusterKubeConfigDataSource,
+		NewTalosKubeconfigMergeDataSource,
 		NewTalosImageFactoryVersionsDataSource,
 		NewTalosImageFactoryExtensionsVersionsDataSource,
 		NewTalosImageFactoryOverlaysVersionsDataSource,
