@@ -250,12 +250,20 @@ func (d *talosMachineConfigurationDataSource) Read(ctx context.Context, req data
 		return
 	}
 
+	// Filter out empty strings to avoid LoadPatches interpreting them as filenames
+	filteredPatches := make([]string, 0, len(configPatches))
+	for _, patch := range configPatches {
+		if patch != "" {
+			filteredPatches = append(filteredPatches, patch)
+		}
+	}
+
 	genOptions := &machineConfigGenerateOptions{
 		machineType:       machineType,
 		clusterName:       state.ClusterName.ValueString(),
 		clusterEndpoint:   state.ClusterEndpoint.ValueString(),
 		machineSecrets:    machineSecrets,
-		configPatches:     configPatches,
+		configPatches:     filteredPatches,
 		kubernetesVersion: state.KubernetesVersion.ValueString(),
 		talosVersion:      state.TalosVersion.ValueString(),
 		docsEnabled:       state.Docs.ValueBool(),
@@ -322,7 +330,15 @@ func (d *talosMachineConfigurationDataSource) ValidateConfig(ctx context.Context
 		return
 	}
 
-	if _, err := configpatcher.LoadPatches(configPatches); err != nil {
+	// Filter out empty strings to avoid LoadPatches interpreting them as filenames
+	filteredPatches := make([]string, 0, len(configPatches))
+	for _, patch := range configPatches {
+		if patch != "" {
+			filteredPatches = append(filteredPatches, patch)
+		}
+	}
+
+	if _, err := configpatcher.LoadPatches(filteredPatches); err != nil {
 		resp.Diagnostics.AddError(
 			"config_patches are invalid",
 			err.Error(),
